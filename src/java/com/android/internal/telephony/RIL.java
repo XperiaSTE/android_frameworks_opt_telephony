@@ -286,7 +286,7 @@ public class RIL extends BaseCommands implements CommandsInterface {
     // Number of per-network elements expected in QUERY_AVAILABLE_NETWORKS's response.
     // 4 elements is default, but many RILs actually return 5, making it impossible to
     // divide the response array without prior knowledge of the number of elements.
-    protected int mQANElements = 4;
+    protected int mQANElements = 5;
 
     //***** Events
 
@@ -994,6 +994,7 @@ public class RIL extends BaseCommands implements CommandsInterface {
             rr.mParcel.writeInt(uusInfo.getDcs());
             rr.mParcel.writeByteArray(uusInfo.getUserData());
         }
+        rr.mParcel.writeInt(255);
 
         if (RILJ_LOGD) riljLog(rr.serialString() + "> " + requestToString(rr.mRequest));
 
@@ -1760,26 +1761,26 @@ public class RIL extends BaseCommands implements CommandsInterface {
     @Override
     public void
     setNetworkSelectionModeAutomatic(Message response) {
-        RILRequest rr
-                = RILRequest.obtain(RIL_REQUEST_SET_NETWORK_SELECTION_AUTOMATIC,
-                                    response);
-
-        if (RILJ_LOGD) riljLog(rr.serialString() + "> " + requestToString(rr.mRequest));
-
-        send(rr);
+        setNetworkSelectionMode(null, response);
     }
 
     @Override
     public void
     setNetworkSelectionModeManual(String operatorNumeric, Message response) {
-        RILRequest rr
-                = RILRequest.obtain(RIL_REQUEST_SET_NETWORK_SELECTION_MANUAL,
-                                    response);
+        setNetworkSelectionMode(operatorNumeric, response);
+    }
 
-        if (RILJ_LOGD) riljLog(rr.serialString() + "> " + requestToString(rr.mRequest)
-                    + " " + operatorNumeric);
+    public void
+    setNetworkSelectionMode(String operatorNumeric, Message response) {
+        RILRequest rr;
+
+        if (operatorNumeric == null)
+            rr = RILRequest.obtain(RIL_REQUEST_SET_NETWORK_SELECTION_AUTOMATIC, response);
+        else
+            rr = RILRequest.obtain(RIL_REQUEST_SET_NETWORK_SELECTION_MANUAL, response);
 
         rr.mParcel.writeString(operatorNumeric);
+        rr.mParcel.writeInt(-1);
 
         send(rr);
     }
